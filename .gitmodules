@@ -1,0 +1,3 @@
+[submodule "kicad/teensy-ansi/teensy.pretty"]
+	path = kicad/teensy-ansi/teensy.pretty
+	url = git@github.com:XenGi/teensy.pretty.git
