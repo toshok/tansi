@@ -24,8 +24,9 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stddef.h>
+#include <cstdint>
+#include <cstddef>
+#include <string>
 
 // Get total number of bytes that have been written to log
 uint32_t log_get_buffer_len();
@@ -43,6 +44,9 @@ extern const char *g_log_firmwareversion;
 
 // Log string
 void log_raw(const char *str);
+
+// Log c++ string
+void log_raw(const std::string &str);
 
 // Log byte as hex
 void log_raw(uint8_t value);
@@ -69,8 +73,6 @@ inline void log_raw()
     // End of template recursion
 }
 
-
-extern "C" unsigned long millis();
 
 // Variadic template for printing multiple items
 template<typename T, typename T2, typename... Rest>

@@ -4,15 +4,13 @@
 
 #include <minGlue.h>
 #include <SdFat.h>
+#include <SD.h>
 
 // This can be overridden in platformio.ini
 // Set to 0 to disable the cache.
 #ifndef INI_CACHE_SIZE
 #define INI_CACHE_SIZE 4096
 #endif
-
-// Use the SdFs instance from main program
-extern SdFs SD;
 
 static struct {
     bool valid;
@@ -41,7 +39,7 @@ void reload_ini_cache(const char *filename)
 
 #if INI_CACHE_SIZE > 0
     g_ini_cache.filename = filename;
-    FsFile config = SD.open(filename, O_RDONLY);
+    FsFile config = SD.sdfs.open(filename, O_RDONLY);
     g_ini_cache.filelen = config.fileSize();
     if (config.isOpen() && g_ini_cache.filelen <= INI_CACHE_SIZE)
     {
@@ -68,7 +66,7 @@ bool ini_openread(const char *filename, INI_FILETYPE *fp)
     }
 #endif
 
-    return fp->open(SD.vol(), filename, O_RDONLY);
+    return fp->open(SD.sdfs.vol(), filename, O_RDONLY);
 }
 
 // Close previously opened file

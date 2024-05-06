@@ -2,13 +2,15 @@
 #pragma once
 
 #include <Arduino.h>
-#include "TeensyANSI_gpio.h"
+#include "TANSI_gpio.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern const char *g_platform_name;
+
+#define PLATFORM_NAME "TANSI v0.1 (Teensy 4.1)"
 
 // Initialize SPI and GPIO configuration
 void platform_init();
@@ -24,6 +26,10 @@ void platform_disable_led(void);
 
 // Debug logging functions
 void platform_log(const char *s);
+
+// Poll function that is called every few milliseconds.
+// Can be left empty or used for platform-specific processing.
+void platform_poll();
 
 // Reinitialize SD card connection and save log from interrupt context.
 // This can be used in crash handlers.

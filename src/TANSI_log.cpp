@@ -21,11 +21,12 @@
 **/
 
 
-#include "TeensyANSI_log.h"
-#include "TeensyANSI_config.h"
-#include "TeensyANSI_platform.h"
+#include "TANSI_log.h"
+#include "TANSI_config.h"
+#include "TANSI_platform.h"
 #include <stdio.h>
 #include <stdarg.h>
+#include <string>
 
 const char *g_log_firmwareversion = TANSI_FW_VERSION " " __DATE__ " " __TIME__;
 
@@ -60,6 +61,11 @@ void log_raw(const char *str)
     g_logbuffer[g_logpos & LOGBUFMASK] = '\0';
 
     platform_log(str);
+}
+
+void log_raw(const std::string &str)
+{
+    log_raw(str.c_str());
 }
 
 // Log byte as hex
@@ -198,76 +204,3 @@ const char *log_get_buffer(uint32_t *startpos, uint32_t *available)
 
     return result;
 }
-
-
-#ifdef NETWORK_DEBUG_LOGGING
-// TODO write directly global log buffer to save some memory
-static char shared_log_buf[1500 * 3];
-
-// core method for variadic printf like logging
-static void log_va(bool debug, const char *format, va_list ap)
-{
-    vsnprintf(shared_log_buf, sizeof(shared_log_buf), format, ap);
-    if (debug)
-    {
-        dbgmsg(shared_log_buf);
-    }
-    else
-    {
-        logmsg(shared_log_buf);
-    }
-}
-
-void logmsg_f(const char *format, ...)
-{
-    va_list ap;
-    va_start(ap, format);
-    log_va(false, format, ap);
-    va_end(ap);
-}
-
-void dbgmsg_f(const char *format, ...)
-{
-    if (!g_log_debug)
-        return;
-    va_list ap;
-    va_start(ap, format);
-    log_va(true, format, ap);
-    va_end(ap);
-}
-
-// core method for logging a data buffer into a hex string
-void log_hex_buf(const unsigned char *buf, unsigned long size, bool debug)
-{
-    static char hex[] = "0123456789abcdef";
-    int o = 0;
-
-    for (int j = 0; j < size; j++) {
-        if (o + 3 >= sizeof(shared_log_buf))
-            break;
-
-        if (j != 0)
-            shared_log_buf[o++] = ' ';
-        shared_log_buf[o++] = hex[(buf[j] >> 4) & 0xf];
-        shared_log_buf[o++] = hex[buf[j] & 0xf];
-        shared_log_buf[o] = 0;
-    }
-    if (debug)
-        dbgmsg(shared_log_buf);
-    else
-        logmsg(shared_log_buf);
-}
-
-void logmsg_buf(const unsigned char *buf, unsigned long size)
-{
-    log_hex_buf(buf, size, false);
-}
-
-void dbgmsg_buf(const unsigned char *buf, unsigned long size)
-{
-    if (!g_log_debug)
-        return;
-    log_hex_buf(buf, size, true);
-}
-#endif // NETWORK_DEBUG_LOGGING
-
