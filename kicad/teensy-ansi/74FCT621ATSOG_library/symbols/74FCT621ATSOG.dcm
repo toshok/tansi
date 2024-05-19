@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 74FCT621ATSOG
+D The 74FCT621T is an octal transceiver with non-inverting Open- Drain bus compatible outputs in both send and receive directions. The B bus outputs are capable of sinking 64mA providing very good capacitive drive characteristics. The 74FCT621A is designed for asynchronous two-way communication between data buses. The 74FCT621A operates at  -40C to +85C
+K
+F https://componentsearchengine.com/Datasheets/1/74FCT621ATSOG.pdf
+$ENDCMP
+#
+#End Doc Library

@@ -1,0 +1,41 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#SamacSys ECAD Model 74FCT621ATSOG
+#/866526/1037386/2.50/20/2/Integrated Circuit
+DEF 74FCT621ATSOG IC 0 30 Y Y 1 F N
+F0 "IC" 950 300 50 H V L CNN
+F1 "74FCT621ATSOG" 950 200 50 H V L CNN
+F2 "SOIC127P1032X265-20N" 950 100 50 H I L CNN
+F3 "https://componentsearchengine.com/Datasheets/1/74FCT621ATSOG.pdf" 950 0 50 H I L CNN
+F4 "The 74FCT621T is an octal transceiver with non-inverting Open- Drain bus compatible outputs in both send and receive directions. The B bus outputs are capable of sinking 64mA providing very good capacitive drive characteristics. The 74FCT621A is designed for asynchronous two-way communication between data buses. The 74FCT621A operates at  -40C to +85C" 950 -100 50 H I L CNN "Description"
+F5 "2.65" 950 -200 50 H I L CNN "Height"
+F6 "972-74FCT621ATSOG" 950 -300 50 H I L CNN "Mouser Part Number"
+F7 "http://www.mouser.com/Search/ProductDetail.aspx?qs=JcGQCygHkIai3RvgHM2ybA%3d%3d" 950 -400 50 H I L CNN "Mouser Price/Stock"
+F8 "Renesas Electronics" 950 -500 50 H I L CNN "Manufacturer_Name"
+F9 "74FCT621ATSOG" 950 -600 50 H I L CNN "Manufacturer_Part_Number"
+DRAW
+X GAB 1 0 0 200 R 50 50 0 0 P
+X A1 2 0 -100 200 R 50 50 0 0 P
+X A2 3 0 -200 200 R 50 50 0 0 P
+X A3 4 0 -300 200 R 50 50 0 0 P
+X A4 5 0 -400 200 R 50 50 0 0 P
+X A5 6 0 -500 200 R 50 50 0 0 P
+X A6 7 0 -600 200 R 50 50 0 0 P
+X A7 8 0 -700 200 R 50 50 0 0 P
+X A8 9 0 -800 200 R 50 50 0 0 P
+X GND 10 0 -900 200 R 50 50 0 0 P
+X VCC 20 1100 0 200 L 50 50 0 0 P
+X ~GBA 19 1100 -100 200 L 50 50 0 0 P
+X B1 18 1100 -200 200 L 50 50 0 0 P
+X B2 17 1100 -300 200 L 50 50 0 0 P
+X B3 16 1100 -400 200 L 50 50 0 0 P
+X B4 15 1100 -500 200 L 50 50 0 0 P
+X B5 14 1100 -600 200 L 50 50 0 0 P
+X B6 13 1100 -700 200 L 50 50 0 0 P
+X B7 12 1100 -800 200 L 50 50 0 0 P
+X B8 11 1100 -900 200 L 50 50 0 0 P
+P 5 0 1 6 200 100 900 100 900 -1000 200 -1000 200 100 N
+ENDDRAW
+ENDDEF
+#
+#End Library

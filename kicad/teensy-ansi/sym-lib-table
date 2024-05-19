@@ -1,4 +1,6 @@
 (sym_lib_table
   (version 7)
   (lib (name "teensy")(type "Legacy")(uri "${KIPRJMOD}/teensy_library/teensy.lib")(options "")(descr ""))
+  (lib (name "74FCT621")(type "Legacy")(uri "${KIPRJMOD}/74FCT621ATSOG_library/symbols/74FCT621ATSOG.lib")(options "")(descr ""))
+  (lib (name "SN75176BP")(type "Legacy")(uri "${KIPRJMOD}/SN75176BP_library/symbols/SN75176BP.lib")(options "")(descr ""))
 )
