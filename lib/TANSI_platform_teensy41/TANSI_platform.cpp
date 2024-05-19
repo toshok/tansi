@@ -5,11 +5,42 @@
 
 const char *g_platform_name = PLATFORM_NAME;
 const int sdcardCSPin = BUILTIN_SDCARD;
+const int ledPin = LED_BUILTIN;
 
 // init GPIO configuration
 void platform_init()
 {
     SD.begin(BUILTIN_SDCARD);
+
+    pinMode(ANSI_CB0, INPUT);
+    pinMode(ANSI_CB1, INPUT);
+    pinMode(ANSI_CB2, INPUT);
+    pinMode(ANSI_CB3, INPUT);
+    pinMode(ANSI_CB4, INPUT);
+    pinMode(ANSI_CB5, INPUT);
+    pinMode(ANSI_CB6, INPUT);
+    pinMode(ANSI_CB7, INPUT);
+
+    pinMode(ANSI_SELECT_OUT_ATTN_IN_STROBE, INPUT);
+    pinMode(ANSI_COMMAND_REQUEST, INPUT);
+    pinMode(ANSI_PARAMETER_REQUEST, INPUT);
+    pinMode(ANSI_BUS_DIRECTION_OUT, INPUT);
+    pinMode(ANSI_READ_GATE, INPUT);
+    pinMode(ANSI_WRITE_GATE, INPUT);
+
+    // pinMode(ANSI_PORT_ENABLE, INPUT);
+    pinMode(ANSI_PORT_ENABLE, INPUT_PULLUP); // for now since I don't want to wire up a resistor.
+
+    pinMode(ANSI_BUS_ACKNOWLEDGE, OUTPUT_OPENDRAIN);
+    pinMode(ANSI_INDEX, OUTPUT_OPENDRAIN);
+    pinMode(ANSI_SECTOR_MARK, OUTPUT_OPENDRAIN);
+    pinMode(ANSI_ATTENTION, OUTPUT_OPENDRAIN);
+    pinMode(ANSI_BUSY, OUTPUT_OPENDRAIN);
+
+    pinMode(ANSI_READ_DATA, OUTPUT_OPENDRAIN);
+    pinMode(ANSI_READ_REF_CLOCK, OUTPUT_OPENDRAIN);
+    pinMode(ANSI_WRITE_CLOCK, INPUT);
+    pinMode(ANSI_WRITE_DATA, INPUT);
 }
 
 void platform_late_init()

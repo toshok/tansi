@@ -70,7 +70,7 @@ ansi_poll() {
                 if (cb & (1<<gAnsiDev.id)) {
                     // we are selected
                     next_state = ANSI_DEV_STATE_SELECTED;
-                    ASSERT(ANSI_BUS_ACKNOWLEDGE)
+                    SET_ACTIVE(ANSI_BUS_ACKNOWLEDGE);
                 }
             }
         }
@@ -89,7 +89,7 @@ ansi_poll() {
                 if (cb & (1<<gAnsiDev.id)) {
                     // we are still selected
                     next_state = ANSI_DEV_STATE_SELECTED;
-                    ASSERT(ANSI_BUS_ACKNOWLEDGE)
+                    SET_ACTIVE(ANSI_BUS_ACKNOWLEDGE);
                 } else {
                     // we are no longer selected
                     next_state = ANSI_DEV_STATE_CONNECTED;
@@ -105,14 +105,14 @@ ansi_poll() {
         // the command comes from the control bus and is a byte
         gAnsiDev.cmd = read_control_bus(&pins);
 
-        ASSERT(ANSI_BUS_ACKNOWLEDGE);
+        SET_ACTIVE(ANSI_BUS_ACKNOWLEDGE);
 
         if (command_is_param_out(gAnsiDev.cmd)) {
             next_state = ANSI_DEV_STATE_AWAITING_PARAM_OUT;
             break;
         } else {
             // otherwise, we can execute the command.  The parameter request
-            // will be asserted as usual, but we'll be the ones writing the
+            // will be single_ended_activeed as usual, but we'll be the ones writing the
             // parameter.
             next_state = ANSI_DEV_STATE_EXECUTE_COMMAND;
             break;
@@ -121,7 +121,7 @@ ansi_poll() {
     case ANSI_DEV_STATE_AWAITING_PARAM_OUT:
         if (ACTIVE(bus_direction_out) && ACTIVE(parameter_request)) {
             gAnsiDev.param_out = read_control_bus(&pins);
-            ASSERT(ANSI_BUS_ACKNOWLEDGE);
+            SET_ACTIVE(ANSI_BUS_ACKNOWLEDGE);
             next_state = ANSI_DEV_STATE_EXECUTE_COMMAND;
         }
         break;
@@ -130,7 +130,7 @@ ansi_poll() {
         bool time_dependent = command_is_time_dependent(gAnsiDev.cmd);
         if (time_dependent) {
             // activate the busy signal
-            ASSERT(ANSI_BUSY);
+            SET_ACTIVE(ANSI_BUSY);
         }
         ansi_execute_command();
         if (command_is_param_out(gAnsiDev.cmd)) {
@@ -145,8 +145,8 @@ ansi_poll() {
         if (!ansi_poll_time_dependent()) {
             // we're done with the time dependent command
             // deactivate the busy signal
-            DEASSERT(ANSI_BUSY);
-            ASSERT(ANSI_ATTENTION);
+            SET_INACTIVE(ANSI_BUSY);
+            SET_ACTIVE(ANSI_ATTENTION);
             // XXX(toshok) clear the busy GS bit?
             next_state = ANSI_DEV_STATE_SELECTED;
         }
@@ -156,12 +156,8 @@ ansi_poll() {
     case ANSI_DEV_STATE_AWAITING_PARAM_IN: {
         if (INACTIVE(bus_direction_out) && ACTIVE(parameter_request)) {
             bool time_dependent = command_is_time_dependent(gAnsiDev.cmd);
-            // change the control bus pins to output
-            
-            // and write the param.
-            // then change the control bus pins back to input
-
-
+            write_control_bus(gAnsiDev.param_in);
+            // what's the handshake part of this?  presumably the host needs to ack?
             next_state = time_dependent ? ANSI_DEV_STATE_AWAITING_TIME_DEPENDENT_COMMAND : ANSI_DEV_STATE_SELECTED;
         }
         break;
@@ -251,4 +247,12 @@ void clear_sb2(uint8_t value) {
 }
 
 void set_attention_state(bool state) {
+}
+
+void write_control_bus(uint8_t v) {
+    // flip the control bus to write
+
+    // write the value
+
+    // flip the control bus back to read
 }

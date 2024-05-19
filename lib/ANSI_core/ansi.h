@@ -38,16 +38,12 @@ struct AnsiOutPins {
     uint8_t read_gate: 1;
     uint8_t write_gate: 1;
 
-    // write clocks/data handled elsewhere
+    // write clock/data handled elsewhere
 };
 
-#define ASSERT(pin)
-#define DEASSERT(pin)
-
-#define ACTIVE(pin) (pins.pin)
-#define INACTIVE(pin) (!pins.pin)
-#define INACTIVE_TO_ACTIVE(pin) (pins.pin && !gAnsiDev.previous_pins.pin)
-#define ACTIVE_TO_INACTIVE(pin) (!pins.pin && gAnsiDev.previous_pins.pin)
+// ANSI low voltage = logic high, high voltage = logic low
+#define ACTIVE(pin) (!pins.pin)
+#define INACTIVE(pin) (pins.pin)
 
 struct AnsiDev {
     // values can be 0-7
@@ -125,5 +121,6 @@ void set_sb1(uint8_t value);
 void clear_sb1(uint8_t value);
 void set_sb2(uint8_t value);
 void clear_sb2(uint8_t value);
+void write_control_bus(uint8_t value);
 
 void set_attention_state(bool state);
