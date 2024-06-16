@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-**/
+ **/
 
 /* Access layer to image files associated with a SCSI device.
  * Currently supported image storage modes:
@@ -29,10 +29,10 @@
  */
 
 #pragma once
+#include <SD.h>
+#include <SdFat.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <SdFat.h>
-#include <SD.h>
 
 // SD card sector size is always 512 bytes
 #define SD_SECTOR_SIZE 512
@@ -45,9 +45,8 @@
 //
 // If the platform supports a ROM drive, it is activated by using
 // filename "ROM:".
-class ImageBackingStore
-{
-public:
+class ImageBackingStore {
+  public:
     // Empty image, cannot be accessed
     ImageBackingStore();
 
@@ -55,7 +54,7 @@ public:
     // Special filename formats:
     //    RAW:start:end
     //    ROM:
-    ImageBackingStore(const char *filename, uint32_t scsi_block_size);
+    ImageBackingStore(const char* filename, uint32_t scsi_block_size);
 
     // Can the image be read?
     bool isOpen();
@@ -84,10 +83,12 @@ public:
     // Set current position for following read/write operations
     bool seek(uint64_t pos);
 
-    // Read data from the image file, returns number of bytes read, or negative on error.
+    // Read data from the image file, returns number of bytes read, or negative
+    // on error.
     ssize_t read(void* buf, size_t count);
 
-    // Write data to image file, returns number of bytes written, or negative on error.
+    // Write data to image file, returns number of bytes written, or negative on
+    // error.
     ssize_t write(const void* buf, size_t count);
 
     // Flush any pending changes to filesystem
@@ -97,7 +98,7 @@ public:
     // Result is only valid for regular files, not raw or flash access
     uint64_t position();
 
-protected:
+  protected:
 #if notyet
     bool m_israw;
     bool m_isrom;
@@ -105,7 +106,7 @@ protected:
     romdrive_hdr_t m_romhdr;
 #endif
     FsFile m_fsfile;
-    SdCard *m_blockdev;
+    SdCard* m_blockdev;
     uint32_t m_bgnsector;
     uint32_t m_endsector;
     uint32_t m_cursector;

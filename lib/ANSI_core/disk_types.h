@@ -7,7 +7,7 @@
 #define HARD_DISK_SECTOR_SIZE 1056
 
 struct AnsiDiskType {
-    const char *name;
+    const char* name;
     uint16_t model_id;
     uint16_t cylinders;
     uint8_t heads;
