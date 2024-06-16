@@ -12,14 +12,8 @@ void platform_init()
 {
     SD.begin(BUILTIN_SDCARD);
 
-    pinMode(ANSI_CB0, INPUT);
-    pinMode(ANSI_CB1, INPUT);
-    pinMode(ANSI_CB2, INPUT);
-    pinMode(ANSI_CB3, INPUT);
-    pinMode(ANSI_CB4, INPUT);
-    pinMode(ANSI_CB5, INPUT);
-    pinMode(ANSI_CB6, INPUT);
-    pinMode(ANSI_CB7, INPUT);
+    // we start out with reading from the control bus
+    platform_set_control_bus_direction(CONTROL_BUS_INPUT);
 
     pinMode(ANSI_SELECT_OUT_ATTN_IN_STROBE, INPUT);
     pinMode(ANSI_COMMAND_REQUEST, INPUT);
@@ -69,4 +63,17 @@ void platform_emergency_log_save()
 // Can be left empty or used for platform-specific processing.
 void platform_poll()
 {
+}
+
+void platform_set_control_bus_direction(ControlBusDirection direction)
+{
+    const bool input = direction == CONTROL_BUS_INPUT;
+    pinMode(ANSI_CB0, input ? INPUT : OUTPUT);
+    pinMode(ANSI_CB1, input ? INPUT : OUTPUT);
+    pinMode(ANSI_CB2, input ? INPUT : OUTPUT);
+    pinMode(ANSI_CB3, input ? INPUT : OUTPUT);
+    pinMode(ANSI_CB4, input ? INPUT : OUTPUT);
+    pinMode(ANSI_CB5, input ? INPUT : OUTPUT);
+    pinMode(ANSI_CB6, input ? INPUT : OUTPUT);
+    pinMode(ANSI_CB7, input ? INPUT : OUTPUT);
 }

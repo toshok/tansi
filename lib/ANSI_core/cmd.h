@@ -54,20 +54,17 @@ typedef enum {
 void ansi_execute_command();
 bool ansi_poll_time_dependent();
 
-static inline bool command_is_param_out(uint8_t cmd) {
-    return (cmd & 0x40) != 0;
-}
-
-static inline bool command_is_param_in(uint8_t cmd) {
-    return (cmd & 0x40) == 0;
-}
+static inline bool command_is_param_out(uint8_t cmd) { return (cmd & 0x40) != 0; }
+static inline bool command_is_param_in(uint8_t cmd) { return (cmd & 0x40) == 0; }
 
 static inline bool command_is_time_dependent(uint8_t cmd) {
     // there doesn't seem to be a nice bit check possible for this, so we just
     // check for the specific command values from the spec.
-    return cmd == ANSI_CMD_SPIN_CONTROL ||
-    cmd == ANSI_CMD_SEEK ||
-    cmd == ANSI_CMD_REZERO ||
-    cmd == ANSI_CMD_SET_ATTENTION ||
-    cmd == ANSI_CMD_REFORMAT_TRACK;
+    return (
+		cmd == ANSI_CMD_SPIN_CONTROL ||
+		cmd == ANSI_CMD_SEEK ||
+		cmd == ANSI_CMD_REZERO ||
+		cmd == ANSI_CMD_SET_ATTENTION ||
+		cmd == ANSI_CMD_REFORMAT_TRACK
+	);
 }

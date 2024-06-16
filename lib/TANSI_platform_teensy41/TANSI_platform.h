@@ -35,6 +35,12 @@ void platform_poll();
 // This can be used in crash handlers.
 void platform_emergency_log_save();
 
+enum ControlBusDirection {
+    CONTROL_BUS_INPUT,
+    CONTROL_BUS_OUTPUT
+};
+void platform_set_control_bus_direction(ControlBusDirection direction);
+
 #ifdef __cplusplus
 }
 #endif

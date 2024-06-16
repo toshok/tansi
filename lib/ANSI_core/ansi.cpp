@@ -279,9 +279,24 @@ void set_attention_state(bool state) {
 }
 
 void write_control_bus(uint8_t v) {
-    // flip the control bus to write
+    // flip the control bus pins to output
+    platform_set_control_bus_direction(CONTROL_BUS_OUTPUT);
 
     // write the value
+    if (v & 0x01) SET_ACTIVE(CB0); else SET_INACTIVE(CB0);
+    if (v & 0x02) SET_ACTIVE(CB1); else SET_INACTIVE(CB1);
+    if (v & 0x04) SET_ACTIVE(CB2); else SET_INACTIVE(CB2);
+    if (v & 0x08) SET_ACTIVE(CB3); else SET_INACTIVE(CB3);
+    if (v & 0x10) SET_ACTIVE(CB4); else SET_INACTIVE(CB4);
+    if (v & 0x20) SET_ACTIVE(CB5); else SET_INACTIVE(CB5);
+    if (v & 0x40) SET_ACTIVE(CB6); else SET_INACTIVE(CB6);
+    if (v & 0x80) SET_ACTIVE(CB7); else SET_INACTIVE(CB7);
 
-    // flip the control bus back to read
+    // TODO(toshok) wait a delay time?  or do we need to include control bus
+    // direction in the state machine?
+    //
+    // delayMicroseconds(ANSI_CONTROL_BUS_DELAY);
+
+    // flip the control bus pins back to input
+    platform_set_control_bus_direction(CONTROL_BUS_INPUT);
 }
