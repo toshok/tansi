@@ -185,6 +185,7 @@ void readConfig() {
 
         // then read per-disk settings
         for (int i = 0; i < NUM_ANSIID; i++) {
+            logmsg("Loading config for disk ", i);
             ansiDiskLoadConfig(i);
         }
     } else {

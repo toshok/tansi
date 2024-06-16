@@ -28,8 +28,7 @@ void platform_init()
     pinMode(ANSI_READ_GATE, INPUT);
     pinMode(ANSI_WRITE_GATE, INPUT);
 
-    // pinMode(ANSI_PORT_ENABLE, INPUT);
-    pinMode(ANSI_PORT_ENABLE, INPUT_PULLUP); // for now since I don't want to wire up a resistor.
+    pinMode(ANSI_PORT_ENABLE, INPUT);
 
     pinMode(ANSI_BUS_ACKNOWLEDGE, OUTPUT_OPENDRAIN);
     pinMode(ANSI_INDEX, OUTPUT_OPENDRAIN);

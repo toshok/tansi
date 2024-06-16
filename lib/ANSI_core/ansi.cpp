@@ -20,16 +20,16 @@ static const char* state_names[] = {
 
 AnsiDev gAnsiDev;
 
-static uint8_t read_control_bus(AnsiOutPins* pins) {
+static uint8_t control_bus_byte(AnsiOutPins& pins) {
     uint8_t v = 0;
-    if (pins->cb0) v |= 0x01;
-    if (pins->cb1) v |= 0x02;
-    if (pins->cb2) v |= 0x04;
-    if (pins->cb3) v |= 0x08;
-    if (pins->cb4) v |= 0x10;
-    if (pins->cb5) v |= 0x20;
-    if (pins->cb6) v |= 0x40;
-    if (pins->cb7) v |= 0x80;
+    if (PIN(pins,CB0)) v |= 0x01;
+    if (PIN(pins,CB1)) v |= 0x02;
+    if (PIN(pins,CB2)) v |= 0x04;
+    if (PIN(pins,CB3)) v |= 0x08;
+    if (PIN(pins,CB4)) v |= 0x10;
+    if (PIN(pins,CB5)) v |= 0x20;
+    if (PIN(pins,CB6)) v |= 0x40;
+    if (PIN(pins,CB7)) v |= 0x80;
     return v;
 }
 
@@ -44,93 +44,116 @@ ansi_poll() {
         logmsg("ANSI initial state ", state_names[gAnsiDev.state]);
     }
 
-    ansi_read_out_pins(&pins);
+    ansi_read_out_pins(pins);
+#if 0
+    logmsg("ANSI pins: cb0=", pins.cb0, " cb1=", pins.cb1, " cb2=", pins.cb2, " cb3=", pins.cb3, " cb4=", pins.cb4, " cb5=", pins.cb5, " cb6=", pins.cb6, " cb7=", pins.cb7, " seai=", pins.select_out_attn_in_strobe, " pe=", pins.port_enable);
+#endif
 
+    // if nothing else changes it, the next state is the same as the current state.
     next_state = gAnsiDev.state;
+
     switch (gAnsiDev.state) {
-    case ANSI_DEV_STATE_DISCONNECTED:
+    case ANSI_DEV_STATE_DISCONNECTED: {
         // The only pin we watch for changing here is
         // port enable.
-        if (ACTIVE(port_enable)) {
-            next_state = ANSI_DEV_STATE_CONNECTED;
+        if (INACTIVE(pins, PORT_ENABLE)) {
+            break;
         }
-        break;
 
-    case ANSI_DEV_STATE_CONNECTED:
+        next_state = ANSI_DEV_STATE_CONNECTED;
+        break;
+    }
+    case ANSI_DEV_STATE_CONNECTED: {
         // if port enable is inactive, we are disconnected
-        if (INACTIVE(port_enable)) {
-            gAnsiDev.state = ANSI_DEV_STATE_DISCONNECTED;
+        if (INACTIVE(pins, PORT_ENABLE)) {
+            next_state = ANSI_DEV_STATE_DISCONNECTED;
             ansi_initial_state();
             break;
         }
 
-        if (ACTIVE(select_out_attn_in_strobe)) {
-            if (ACTIVE(bus_direction_out)) {
-                uint8_t cb = read_control_bus(&pins);
-                if (cb & (1<<gAnsiDev.id)) {
-                    // we are selected
-                    next_state = ANSI_DEV_STATE_SELECTED;
-                    SET_ACTIVE(ANSI_BUS_ACKNOWLEDGE);
-                }
-            }
+        if (INACTIVE(pins, SELECT_OUT_ATTN_IN_STROBE)) {
+            break;
+        }
+
+        if (INACTIVE(pins, BUS_DIRECTION_OUT)) {
+            break;
+        }
+
+        uint8_t cb = control_bus_byte(pins);
+        if (cb & (1<<gAnsiDev.id)) {
+            // we are selected
+            next_state = ANSI_DEV_STATE_SELECTED;
+            SET_ACTIVE(BUS_ACKNOWLEDGE);
         }
         break;
+    }
 
-    case ANSI_DEV_STATE_SELECTED:
-        // start of command handshake
-        if (ACTIVE(bus_direction_out) && ACTIVE(command_request)) {
+    case ANSI_DEV_STATE_SELECTED: {
+        if (ACTIVE(pins, BUS_DIRECTION_OUT) && ACTIVE(pins, COMMAND_REQUEST)) {
+            // start of command handshake
             next_state = ANSI_DEV_STATE_READ_COMMAND;
             break;
         }
 
-        if (ACTIVE(select_out_attn_in_strobe)) {
-            if (ACTIVE(bus_direction_out)) {
-                uint8_t cb = read_control_bus(&pins);
-                if (cb & (1<<gAnsiDev.id)) {
-                    // we are still selected
-                    next_state = ANSI_DEV_STATE_SELECTED;
-                    SET_ACTIVE(ANSI_BUS_ACKNOWLEDGE);
-                } else {
-                    // we are no longer selected
-                    next_state = ANSI_DEV_STATE_CONNECTED;
-                }
-                break;
+        if (INACTIVE(pins, SELECT_OUT_ATTN_IN_STROBE)) {
+            // nothing to do here, we're still selected
+            break;
+        }
+        
+        // select_out/attn_in strobe is active, so depending on the state
+        // of bus_direction, selection is changing or we should gate our
+        // attention onto our radial line.
+        if (ACTIVE(pins, BUS_DIRECTION_OUT)) {
+            uint8_t cb = control_bus_byte(pins);
+            if (cb & (1<<gAnsiDev.id)) {
+                // we are still selected
+                next_state = ANSI_DEV_STATE_SELECTED;
+                SET_ACTIVE(BUS_ACKNOWLEDGE);
             } else {
-                // TODO(toshok) gate our attention state onto our radial line.
+                // we are no longer selected
+                next_state = ANSI_DEV_STATE_CONNECTED;
             }
+            break;
+        } else {
+            // TODO(toshok) gate our attention state onto our radial line.
         }
         break;
+    }
 
-    case ANSI_DEV_STATE_READ_COMMAND:
+    case ANSI_DEV_STATE_READ_COMMAND: {
         // the command comes from the control bus and is a byte
-        gAnsiDev.cmd = read_control_bus(&pins);
+        gAnsiDev.cmd = control_bus_byte(pins);
 
-        SET_ACTIVE(ANSI_BUS_ACKNOWLEDGE);
+        SET_ACTIVE(BUS_ACKNOWLEDGE);
 
         if (command_is_param_out(gAnsiDev.cmd)) {
             next_state = ANSI_DEV_STATE_AWAITING_PARAM_OUT;
             break;
-        } else {
-            // otherwise, we can execute the command.  The parameter request
-            // will be single_ended_activeed as usual, but we'll be the ones writing the
-            // parameter.
-            next_state = ANSI_DEV_STATE_EXECUTE_COMMAND;
+        }
+
+        // otherwise, we can execute the command.  The parameter request
+        // will be single_ended_activeed as usual, but we'll be the ones writing the
+        // parameter.
+        next_state = ANSI_DEV_STATE_EXECUTE_COMMAND;
+        break;
+    }
+
+    case ANSI_DEV_STATE_AWAITING_PARAM_OUT: {
+        if (!ACTIVE(pins, BUS_DIRECTION_OUT) || !ACTIVE(pins, PARAMETER_REQUEST)) {
             break;
         }
 
-    case ANSI_DEV_STATE_AWAITING_PARAM_OUT:
-        if (ACTIVE(bus_direction_out) && ACTIVE(parameter_request)) {
-            gAnsiDev.param_out = read_control_bus(&pins);
-            SET_ACTIVE(ANSI_BUS_ACKNOWLEDGE);
-            next_state = ANSI_DEV_STATE_EXECUTE_COMMAND;
-        }
+        gAnsiDev.param_out = control_bus_byte(pins);
+        SET_ACTIVE(BUS_ACKNOWLEDGE);
+        next_state = ANSI_DEV_STATE_EXECUTE_COMMAND;
         break;
+    }
 
     case ANSI_DEV_STATE_EXECUTE_COMMAND: {
         bool time_dependent = command_is_time_dependent(gAnsiDev.cmd);
         if (time_dependent) {
             // activate the busy signal
-            SET_ACTIVE(ANSI_BUSY);
+            SET_ACTIVE(BUSY);
         }
         ansi_execute_command();
         if (command_is_param_out(gAnsiDev.cmd)) {
@@ -142,54 +165,60 @@ ansi_poll() {
     }
 
     case ANSI_DEV_STATE_AWAITING_TIME_DEPENDENT_COMMAND: {
-        if (!ansi_poll_time_dependent()) {
-            // we're done with the time dependent command
-            // deactivate the busy signal
-            SET_INACTIVE(ANSI_BUSY);
-            SET_ACTIVE(ANSI_ATTENTION);
-            // XXX(toshok) clear the busy GS bit?
-            next_state = ANSI_DEV_STATE_SELECTED;
+        if (ansi_poll_time_dependent()) {
+            // we aren't done yet.
+            break;
         }
+
+        // we're done with the time dependent command
+        // deactivate the busy signal
+        SET_INACTIVE(BUSY);
+        SET_ACTIVE(ATTENTION);
+        // XXX(toshok) clear the busy GS bit?
+        next_state = ANSI_DEV_STATE_SELECTED;
         break;
     }
 
     case ANSI_DEV_STATE_AWAITING_PARAM_IN: {
-        if (INACTIVE(bus_direction_out) && ACTIVE(parameter_request)) {
-            bool time_dependent = command_is_time_dependent(gAnsiDev.cmd);
-            write_control_bus(gAnsiDev.param_in);
-            // what's the handshake part of this?  presumably the host needs to ack?
-            next_state = time_dependent ? ANSI_DEV_STATE_AWAITING_TIME_DEPENDENT_COMMAND : ANSI_DEV_STATE_SELECTED;
+        if (ACTIVE(pins, BUS_DIRECTION_OUT) || INACTIVE(pins, PARAMETER_REQUEST)) {
+            break;
         }
+
+        bool time_dependent = command_is_time_dependent(gAnsiDev.cmd);
+        write_control_bus(gAnsiDev.param_in);
+        // what's the handshake part of this?  presumably the host needs to ack?
+        next_state = time_dependent ? ANSI_DEV_STATE_AWAITING_TIME_DEPENDENT_COMMAND : ANSI_DEV_STATE_SELECTED;
         break;
     }
     }
 
     if (gAnsiDev.state != next_state) {
         logmsg("ANSI state ", state_names[gAnsiDev.state], " -> ", state_names[next_state]);
+        gAnsiDev.state = next_state;
     }
 
-    gAnsiDev.state = next_state;
     gAnsiDev.previous_pins = pins;
 }
 
 void
-ansi_read_out_pins(AnsiOutPins *pins) {
-    pins->cb0 = digitalReadFast(ANSI_CB0);
-    pins->cb1 = digitalReadFast(ANSI_CB1);
-    pins->cb2 = digitalReadFast(ANSI_CB2);
-    pins->cb3 = digitalReadFast(ANSI_CB3);
-    pins->cb4 = digitalReadFast(ANSI_CB4);
-    pins->cb5 = digitalReadFast(ANSI_CB5);
-    pins->cb6 = digitalReadFast(ANSI_CB6);
-    pins->cb7 = digitalReadFast(ANSI_CB7);
+ansi_read_out_pins(AnsiOutPins& pins) {
+#define READ_PIN(pinName) pins.pin_##pinName = digitalReadFast(ANSI_##pinName)
+    READ_PIN(CB0);
+    READ_PIN(CB1);
+    READ_PIN(CB2);
+    READ_PIN(CB3);
+    READ_PIN(CB4);
+    READ_PIN(CB5);
+    READ_PIN(CB6);
+    READ_PIN(CB7);
 
-    pins->select_out_attn_in_strobe = digitalReadFast(ANSI_SELECT_OUT_ATTN_IN_STROBE);
-    pins->command_request = digitalReadFast(ANSI_COMMAND_REQUEST);
-    pins->parameter_request = digitalReadFast(ANSI_PARAMETER_REQUEST);
-    pins->bus_direction_out = digitalReadFast(ANSI_BUS_DIRECTION_OUT);
-    pins->port_enable = digitalReadFast(ANSI_PORT_ENABLE);
-    pins->read_gate = digitalReadFast(ANSI_READ_GATE);
-    pins->write_gate = digitalReadFast(ANSI_WRITE_GATE);
+    READ_PIN(SELECT_OUT_ATTN_IN_STROBE);
+    READ_PIN(COMMAND_REQUEST);
+    READ_PIN(PARAMETER_REQUEST);
+    READ_PIN(BUS_DIRECTION_OUT);
+    READ_PIN(PORT_ENABLE);
+    READ_PIN(READ_GATE);
+    READ_PIN(WRITE_GATE);
 }
 
 void ansi_initial_state() {

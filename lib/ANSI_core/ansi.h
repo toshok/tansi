@@ -22,28 +22,29 @@ enum AnsiDevState {
 struct AnsiOutPins {
     // the control bus operates both as in and out, but
     // the normal state is out.
-    uint8_t cb0: 1;
-    uint8_t cb1: 1;
-    uint8_t cb2: 1;
-    uint8_t cb3: 1;
-    uint8_t cb4: 1;
-    uint8_t cb5: 1;
-    uint8_t cb6: 1;
-    uint8_t cb7: 1;
-    uint8_t select_out_attn_in_strobe: 1;
-    uint8_t command_request: 1;
-    uint8_t parameter_request: 1;
-    uint8_t bus_direction_out: 1;
-    uint8_t port_enable: 1;
-    uint8_t read_gate: 1;
-    uint8_t write_gate: 1;
+    uint8_t pin_CB0: 1;
+    uint8_t pin_CB1: 1;
+    uint8_t pin_CB2: 1;
+    uint8_t pin_CB3: 1;
+    uint8_t pin_CB4: 1;
+    uint8_t pin_CB5: 1;
+    uint8_t pin_CB6: 1;
+    uint8_t pin_CB7: 1;
+    uint8_t pin_SELECT_OUT_ATTN_IN_STROBE: 1;
+    uint8_t pin_COMMAND_REQUEST: 1;
+    uint8_t pin_PARAMETER_REQUEST: 1;
+    uint8_t pin_BUS_DIRECTION_OUT: 1;
+    uint8_t pin_PORT_ENABLE: 1;
+    uint8_t pin_READ_GATE: 1;
+    uint8_t pin_WRITE_GATE : 1;
 
     // write clock/data handled elsewhere
 };
+#define PIN(pins, pinName) pins.pin_##pinName
 
 // ANSI low voltage = logic high, high voltage = logic low
-#define ACTIVE(pin) (!pins.pin)
-#define INACTIVE(pin) (pins.pin)
+#define ACTIVE(pins, pinName) (!pins.pin_##pinName)
+#define INACTIVE(pins, pinName) (pins.pin_##pinName)
 
 struct AnsiDev {
     // values can be 0-7
@@ -80,7 +81,7 @@ struct AnsiDev {
 };
 
 void ansi_poll();
-void ansi_read_out_pins(AnsiOutPins *pins);
+void ansi_read_out_pins(AnsiOutPins& pins);
 
 // called when initializing, and when transitioning from connected to disconnected states
 void ansi_initial_state();

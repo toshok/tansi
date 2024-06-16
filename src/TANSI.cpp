@@ -92,9 +92,9 @@ void blinkStatus(int count)
 
   for (int i = 0; i < count; i++)
   {
-    // LED_ON();
+    LED_ON();
     delay(blink_delay);
-    // LED_OFF();
+    LED_OFF();
     delay(blink_delay);
   }
 }
@@ -326,7 +326,9 @@ static void tansi_setup_sd_card()
 
 extern "C" void tansi_setup(void)
 {
-  delay(1000);
+  // give ourselves enough time to connect with the serial console
+  delay(10000);
+
   logmsg("TANSI " TANSI_FW_VERSION " " __DATE__ " " __TIME__);
   logmsg("SD card: ", g_sdcard_present ? "present" : "not found");
   logmsg("Debug: ", g_log_debug ? "enabled" : "disabled");
