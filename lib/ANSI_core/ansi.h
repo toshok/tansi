@@ -15,6 +15,7 @@ enum AnsiDevState {
     ANSI_DEV_STATE_EXECUTE_COMMAND,
     ANSI_DEV_STATE_AWAITING_PARAM_IN,
     ANSI_DEV_STATE_AWAITING_TIME_DEPENDENT_COMMAND,
+    // basically unimplemented
     ANSI_DEV_STATE_READING,
     ANSI_DEV_STATE_WRITING
 };
@@ -81,7 +82,6 @@ struct AnsiDev {
 };
 
 void ansi_poll();
-void ansi_read_out_pins(AnsiOutPins& pins);
 
 // called when initializing, and when transitioning from connected to
 // disconnected states
@@ -123,6 +123,5 @@ void set_sb1(uint8_t value);
 void clear_sb1(uint8_t value);
 void set_sb2(uint8_t value);
 void clear_sb2(uint8_t value);
-void write_control_bus(uint8_t value);
 
 void set_attention_state(bool state);

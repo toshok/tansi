@@ -35,7 +35,11 @@ void platform_poll();
 // This can be used in crash handlers.
 void platform_emergency_log_save();
 
-enum ControlBusDirection { CONTROL_BUS_INPUT, CONTROL_BUS_OUTPUT };
+#define platform_read_pin(pin) digitalReadFast(pin)
+
+// "in" and "out" here are from the perspective of the host (to match the rest
+// of the ansi spec/terminology.)
+enum ControlBusDirection { CONTROL_BUS_IN, CONTROL_BUS_OUT };
 void platform_set_control_bus_direction(ControlBusDirection direction);
 void platform_write_control_bus_byte(uint8_t v);
 

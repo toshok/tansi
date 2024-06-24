@@ -41,7 +41,9 @@
 #define LED_ON() digitalWrite(LED_BUILTIN, HIGH)
 #define LED_OFF() digitalWrite(LED_BUILTIN, LOW)
 
-#define SET_ACTIVE(pinName) digitalWrite(ANSI_##pinName, LOW)
-#define SET_INACTIVE(pinName) digitalWrite(ANSI_##pinName, HIGH)
+#define SET_BOOL(pinName, value)                                               \
+    digitalWriteFast(ANSI_##pinName, value ? LOW : HIGH)
+#define SET_ACTIVE(pinName) digitalWriteFast(ANSI_##pinName, LOW);
+#define SET_INACTIVE(pinName) digitalWriteFast(ANSI_##pinName, HIGH)
 
 #define SD_CONFIG BUILTIN_SDCARD

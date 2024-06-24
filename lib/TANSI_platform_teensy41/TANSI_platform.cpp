@@ -12,7 +12,10 @@ void platform_init() {
     SD.begin(BUILTIN_SDCARD);
 
     // we start out with reading from the control bus
-    platform_set_control_bus_direction(CONTROL_BUS_INPUT);
+    //
+    // TODO(toshok) maybe this call should be made at the ansi layer so we don't
+    // need to duplicate it on each platform?
+    platform_set_control_bus_direction(CONTROL_BUS_OUT);
 
     pinMode(ANSI_SELECT_OUT_ATTN_IN_STROBE, INPUT);
     pinMode(ANSI_COMMAND_REQUEST, INPUT);
@@ -53,15 +56,15 @@ void platform_emergency_log_save() {}
 void platform_poll() {}
 
 void platform_set_control_bus_direction(ControlBusDirection direction) {
-    const bool input = direction == CONTROL_BUS_INPUT;
-    pinMode(ANSI_CB0, input ? INPUT : OUTPUT);
-    pinMode(ANSI_CB1, input ? INPUT : OUTPUT);
-    pinMode(ANSI_CB2, input ? INPUT : OUTPUT);
-    pinMode(ANSI_CB3, input ? INPUT : OUTPUT);
-    pinMode(ANSI_CB4, input ? INPUT : OUTPUT);
-    pinMode(ANSI_CB5, input ? INPUT : OUTPUT);
-    pinMode(ANSI_CB6, input ? INPUT : OUTPUT);
-    pinMode(ANSI_CB7, input ? INPUT : OUTPUT);
+    const bool output_from_drive = direction == CONTROL_BUS_IN;
+    pinMode(ANSI_CB0, output_from_drive ? OUTPUT : INPUT);
+    pinMode(ANSI_CB1, output_from_drive ? OUTPUT : INPUT);
+    pinMode(ANSI_CB2, output_from_drive ? OUTPUT : INPUT);
+    pinMode(ANSI_CB3, output_from_drive ? OUTPUT : INPUT);
+    pinMode(ANSI_CB4, output_from_drive ? OUTPUT : INPUT);
+    pinMode(ANSI_CB5, output_from_drive ? OUTPUT : INPUT);
+    pinMode(ANSI_CB6, output_from_drive ? OUTPUT : INPUT);
+    pinMode(ANSI_CB7, output_from_drive ? OUTPUT : INPUT);
 }
 
 void platform_write_control_bus_byte(uint8_t v) {

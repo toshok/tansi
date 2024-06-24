@@ -18,6 +18,27 @@ static const char* state_names[] = {"DISCONNECTED",
 
 AnsiDev gAnsiDev;
 
+static void ansi_sample_out_pins(AnsiOutPins& pins) {
+#define READ_PIN(pinName) pins.pin_##pinName = platform_read_pin(ANSI_##pinName)
+
+    READ_PIN(CB0);
+    READ_PIN(CB1);
+    READ_PIN(CB2);
+    READ_PIN(CB3);
+    READ_PIN(CB4);
+    READ_PIN(CB5);
+    READ_PIN(CB6);
+    READ_PIN(CB7);
+
+    READ_PIN(SELECT_OUT_ATTN_IN_STROBE);
+    READ_PIN(COMMAND_REQUEST);
+    READ_PIN(PARAMETER_REQUEST);
+    READ_PIN(BUS_DIRECTION_OUT);
+    READ_PIN(PORT_ENABLE);
+    READ_PIN(READ_GATE);
+    READ_PIN(WRITE_GATE);
+}
+
 static uint8_t control_bus_byte(AnsiOutPins& pins) {
     uint8_t v = 0;
     if (PIN(pins, CB0))
@@ -41,6 +62,7 @@ static uint8_t control_bus_byte(AnsiOutPins& pins) {
 
 void ansi_poll() {
     static bool first_poll = true;
+    AnsiDevState cur_state;
     AnsiDevState next_state;
     AnsiOutPins pins;
 
@@ -49,16 +71,22 @@ void ansi_poll() {
         logmsg("ANSI initial state ", state_names[gAnsiDev.state]);
     }
 
-    ansi_read_out_pins(pins);
+    ansi_sample_out_pins(pins);
 #if 0
     logmsg("ANSI pins: cb0=", pins.cb0, " cb1=", pins.cb1, " cb2=", pins.cb2, " cb3=", pins.cb3, " cb4=", pins.cb4, " cb5=", pins.cb5, " cb6=", pins.cb6, " cb7=", pins.cb7, " seai=", pins.select_out_attn_in_strobe, " pe=", pins.port_enable);
 #endif
 
+    cur_state = gAnsiDev.state;
     // if nothing else changes it, the next state is the same as the current
     // state.
-    next_state = gAnsiDev.state;
+    next_state = cur_state;
 
-    switch (gAnsiDev.state) {
+    // regardless of the state transitions, set the control bus direction based
+    // on the state of the bus_direction_out pin.
+    platform_set_control_bus_direction(
+        ACTIVE(pins, BUS_DIRECTION_OUT) ? CONTROL_BUS_OUT : CONTROL_BUS_IN);
+
+    switch (cur_state) {
     case ANSI_DEV_STATE_DISCONNECTED: {
         // The only pin we watch for changing here is
         // port enable.
@@ -85,8 +113,8 @@ void ansi_poll() {
             break;
         }
 
-        uint8_t cb = control_bus_byte(pins);
-        if (cb & (1 << gAnsiDev.id)) {
+        uint8_t id = control_bus_byte(pins);
+        if (id & (1 << gAnsiDev.id)) {
             // we are selected
             next_state = ANSI_DEV_STATE_SELECTED;
             SET_ACTIVE(BUS_ACKNOWLEDGE);
@@ -98,6 +126,18 @@ void ansi_poll() {
         if (ACTIVE(pins, BUS_DIRECTION_OUT) && ACTIVE(pins, COMMAND_REQUEST)) {
             // start of command handshake
             next_state = ANSI_DEV_STATE_READ_COMMAND;
+            break;
+        }
+
+        if (ACTIVE(pins, READ_GATE)) {
+            // start reading!
+            next_state = ANSI_DEV_STATE_READING;
+            break;
+        }
+
+        if (ACTIVE(pins, WRITE_GATE)) {
+            // start writing!
+            next_state = ANSI_DEV_STATE_WRITING;
             break;
         }
 
@@ -120,9 +160,11 @@ void ansi_poll() {
                 next_state = ANSI_DEV_STATE_CONNECTED;
             }
             break;
-        } else {
-            // TODO(toshok) gate our attention state onto our radial line.
         }
+
+        // bus_direction is in, so we should gate our attention onto the control
+        // bus.
+        platform_write_control_bus_byte(1 << gAnsiDev.id);
         break;
     }
 
@@ -195,42 +237,34 @@ void ansi_poll() {
         }
 
         bool time_dependent = command_is_time_dependent(gAnsiDev.cmd);
-        write_control_bus(gAnsiDev.param_in);
+        platform_write_control_bus_byte(gAnsiDev.param_in);
         // what's the handshake part of this?  presumably the host needs to ack?
         next_state = time_dependent
                          ? ANSI_DEV_STATE_AWAITING_TIME_DEPENDENT_COMMAND
                          : ANSI_DEV_STATE_SELECTED;
         break;
     }
+    case ANSI_DEV_STATE_READING: {
+        // XXX(toshok) implement
+        break;
+    }
+    case ANSI_DEV_STATE_WRITING: {
+        // XXX(toshok) implement
+        break;
+    }
+    default: {
+        logmsg("ANSI unknown state ", cur_state);
+        break;
+    }
     }
 
-    if (gAnsiDev.state != next_state) {
-        logmsg("ANSI state ", state_names[gAnsiDev.state], " -> ",
+    if (cur_state != next_state) {
+        logmsg("ANSI state ", state_names[cur_state], " -> ",
                state_names[next_state]);
         gAnsiDev.state = next_state;
     }
 
     gAnsiDev.previous_pins = pins;
-}
-
-void ansi_read_out_pins(AnsiOutPins& pins) {
-#define READ_PIN(pinName) pins.pin_##pinName = digitalReadFast(ANSI_##pinName)
-    READ_PIN(CB0);
-    READ_PIN(CB1);
-    READ_PIN(CB2);
-    READ_PIN(CB3);
-    READ_PIN(CB4);
-    READ_PIN(CB5);
-    READ_PIN(CB6);
-    READ_PIN(CB7);
-
-    READ_PIN(SELECT_OUT_ATTN_IN_STROBE);
-    READ_PIN(COMMAND_REQUEST);
-    READ_PIN(PARAMETER_REQUEST);
-    READ_PIN(BUS_DIRECTION_OUT);
-    READ_PIN(PORT_ENABLE);
-    READ_PIN(READ_GATE);
-    READ_PIN(WRITE_GATE);
 }
 
 void ansi_initial_state() { gAnsiDev.attributes_initialized = false; }
@@ -279,20 +313,7 @@ void clear_sb2(uint8_t value) {
     }
 }
 
-void set_attention_state(bool state) {}
-
-void write_control_bus(uint8_t v) {
-    // flip the control bus pins to output
-    platform_set_control_bus_direction(CONTROL_BUS_OUTPUT);
-
-    // write the value
-    platform_write_control_bus_byte(v);
-
-    // TODO(toshok) wait a delay time?  or do we need to include control bus
-    // direction in the state machine?
-    //
-    // delayMicroseconds(ANSI_CONTROL_BUS_DELAY);
-
-    // flip the control bus pins back to input
-    platform_set_control_bus_direction(CONTROL_BUS_INPUT);
+void set_attention_state(bool state) {
+    gAnsiDev.attention_enabled = state;
+    SET_BOOL(ATTENTION, state);
 }
