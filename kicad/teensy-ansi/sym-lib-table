@@ -3,4 +3,5 @@
   (lib (name "teensy")(type "Legacy")(uri "${KIPRJMOD}/teensy_library/teensy.lib")(options "")(descr ""))
   (lib (name "74FCT621")(type "Legacy")(uri "${KIPRJMOD}/74FCT621ATSOG_library/symbols/74FCT621ATSOG.lib")(options "")(descr ""))
   (lib (name "SN75176BP")(type "Legacy")(uri "${KIPRJMOD}/SN75176BP_library/symbols/SN75176BP.lib")(options "")(descr ""))
+  (lib (name "LTA-1000E")(type "KiCad")(uri "${KIPRJMOD}/LTA-1000E_library/symbols/LTA-1000E.kicad_sym")(options "")(descr ""))
 )
