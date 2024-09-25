@@ -34,8 +34,8 @@ typedef enum {
     // --
     ANSI_CMD_LOAD_ATTRIBUTE_NUMBER = 0x50,
     ANSI_CMD_LOAD_ATTRIBUTE = 0x51,
-    ANSI_CMD_READ_CONTROL = 0x53,
-    ANSI_CMD_OFFSET_CONTROL = 0x54,
+    ANSI_CMD_READ_CONTROL = 0x53,   // XXX only in apollo eng handbook
+    ANSI_CMD_OFFSET_CONTROL = 0x54, // XXX only in apollo eng handbook
     ANSI_CMD_SPIN_CONTROL = 0x55,
     ANSI_CMD_LOAD_SECT_PER_TRACK_HIGH = 0x56,   // MSB
     ANSI_CMD_LOAD_SECT_PER_TRACK_MEDIUM = 0x57, // MedSB
@@ -44,10 +44,10 @@ typedef enum {
     ANSI_CMD_LOAD_BYTES_PER_SECT_MEDIUM = 0x5A, // MedSB
     ANSI_CMD_LOAD_BYTES_PER_SECT_LOW = 0x5B,    // LSB
                                                 // --
-    ANSI_CMD_LOAD_READ_PERMIT_HIGH = 0x6B,
-    ANSI_CMD_LOAD_READ_PERMIT_LOW = 0x6C,
-    ANSI_CMD_LOAD_WRITE_PERMIT_HIGH = 0x6D,
-    ANSI_CMD_LOAD_WRITE_PERMIT_LOW = 0x6E,
+    ANSI_CMD_LOAD_READ_PERMIT_HIGH = 0x6B,  // XXX only in apollo eng handbook
+    ANSI_CMD_LOAD_READ_PERMIT_LOW = 0x6C,   // XXX only in apollo eng handbook
+    ANSI_CMD_LOAD_WRITE_PERMIT_HIGH = 0x6D, // XXX only in apollo eng handbook
+    ANSI_CMD_LOAD_WRITE_PERMIT_LOW = 0x6E,  // XXX only in apollo eng handbook
     ANSI_CMD_LOAD_TEST_BYTE = 0x6F,
 } AnsiCmd;
 

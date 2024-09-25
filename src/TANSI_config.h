@@ -40,16 +40,7 @@
 #define NUM_ANSIID 8 // Maximum number of supported ANSI-IDs (The minimum is 0)
 #define READ_PARITY_CHECK 0 // Perform read parity check (unverified)
 
-// Default delay for SCSI phases.
-// Can be adjusted in ini file
-#define DEFAULT_SCSI_DELAY_US 10
-#define DEFAULT_REQ_TYPE_SETUP_NS 500
-
 // Use prefetch buffer in read requests
 #ifndef PREFETCH_BUFFER_SIZE
 #define PREFETCH_BUFFER_SIZE 8192
 #endif
-
-// Masks for buttons
-#define EJECT_BTN_MASK (1 | 2)
-#define USER_BTN_MASK (4)

@@ -472,6 +472,12 @@ void ansi_execute_command() {
 
     case ANSI_CMD_LOAD_TEST_BYTE:
         dbgmsg("ansicmd LOAD_TEST_BYTE", param_out);
+        // This command shall condition the selected device to accept the
+        // Parameter Byte as a specific test byte that shall be returned to the
+        // host as part of the Report Test Byte Command (see Section 4.2.15).
+        //
+        // This command pair allows the host to test the integrity of data
+        // transfer over the Control Bus.
         dev->test_byte = param_out;
         return;
 

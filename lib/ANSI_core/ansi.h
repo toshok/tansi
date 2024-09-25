@@ -31,6 +31,7 @@ struct AnsiOutPins {
     uint8_t pin_CB5 : 1;
     uint8_t pin_CB6 : 1;
     uint8_t pin_CB7 : 1;
+
     uint8_t pin_SELECT_OUT_ATTN_IN_STROBE : 1;
     uint8_t pin_COMMAND_REQUEST : 1;
     uint8_t pin_PARAMETER_REQUEST : 1;

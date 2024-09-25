@@ -18,6 +18,28 @@ static const char* state_names[] = {"DISCONNECTED",
 
 AnsiDev gAnsiDev;
 
+static uint8_t control_bus_byte(AnsiOutPins& pins) {
+    uint8_t v = 0;
+
+#define CB_PIN(number)                                                         \
+    if (ACTIVE(pins, CB##number)) {                                            \
+        v |= (1 << number);                                                    \
+    }
+
+    CB_PIN(0);
+    CB_PIN(1);
+    CB_PIN(2);
+    CB_PIN(3);
+    CB_PIN(4);
+    CB_PIN(5);
+    CB_PIN(6);
+    CB_PIN(7);
+
+#undef CB_PIN
+
+    return v;
+}
+
 static void ansi_sample_out_pins(AnsiOutPins& pins) {
 #define READ_PIN(pinName) pins.pin_##pinName = platform_read_pin(ANSI_##pinName)
 
@@ -37,27 +59,8 @@ static void ansi_sample_out_pins(AnsiOutPins& pins) {
     READ_PIN(PORT_ENABLE);
     READ_PIN(READ_GATE);
     READ_PIN(WRITE_GATE);
-}
 
-static uint8_t control_bus_byte(AnsiOutPins& pins) {
-    uint8_t v = 0;
-    if (PIN(pins, CB0))
-        v |= 0x01;
-    if (PIN(pins, CB1))
-        v |= 0x02;
-    if (PIN(pins, CB2))
-        v |= 0x04;
-    if (PIN(pins, CB3))
-        v |= 0x08;
-    if (PIN(pins, CB4))
-        v |= 0x10;
-    if (PIN(pins, CB5))
-        v |= 0x20;
-    if (PIN(pins, CB6))
-        v |= 0x40;
-    if (PIN(pins, CB7))
-        v |= 0x80;
-    return v;
+#undef READ_PIN
 }
 
 void ansi_poll() {

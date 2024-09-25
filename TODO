@@ -1,0 +1,25 @@
+TODO:
+
+1. get rid of the weird split between s2s and ZULUSCSI_disk.
+   everything that can go into ANSI_core should.
+2. make it possible to have platform specific config settings (i.e. our version of S2S_BoardCfg)
+2. All config stuff should populate structures from ANSI_core.
+3. ANSI_core should either have callbacks or pure virtual methods for IO.
+
+relationship of our toplevel package-like things:
+
+src/             Initialization, driving the config parsing and startup.  Passes config to ANSI_core
+                 Mainloop code lives here, with polling for ANSI_core/platform.
+lib/ANSI_core    Everything about the ANSI protocol including reading/writing to disk images.
+                 calls out to platform for setting pins
+lib/*platform**  platform/hardware-specific code and defines for gpio, spi, SD, etc.  If the platform
+                 supports additional things (maybe it has multiple SD cards?  networking?) those should
+                 be here.
+
+4. https://www.ti.com/product/THVD1452 looks like it does what I need and may base the unidirectional voltage off the input voltage?  so if I give it 3.3V it may give back 0-3.3v? It also has two unidirectional connections.  definitely get these since they're on jlcpcb too.
+
+5. add vcd traces for things!
+
+* https://sigrok.org/wiki/PulseView qt (:-1:)
+* https://www.wavetrace.io/ (looks dead maybe?)
+* https://marketplace.visualstudio.com/items?itemName=lramseyer.vaporview
